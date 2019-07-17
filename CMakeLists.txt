@@ -1,0 +1,19 @@
+cmake_minimum_required(VERSION 3.9)
+project(toucanlib)
+
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+
+add_compile_options(-Wall -Wextra -Wpedantic -g)
+
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "bin")
+
+add_subdirectory(toucan)
+
+option(TOUCAN_TESTS "Enable toucan library tests" OFF)
+
+if(${TOUCAN_TESTS})
+    add_subdirectory(tests)
+endif()
+
