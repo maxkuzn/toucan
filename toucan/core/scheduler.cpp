@@ -3,10 +3,9 @@
 #include <toucan/core/fiber.hpp>
 #include <thread>
 
+#include <iostream>
+
 namespace toucan {
-
-
-////////////////////////////////////////////////////////////////////
 
 static thread_local Worker* current_worker = nullptr;
 
@@ -34,7 +33,7 @@ static void SetCurrentFiber(Fiber* fiber) {
 
 ////////////////////////////////////////////////////////////////////
 
-Scheduler::Scheduler(size_t workers_count) {
+Scheduler::Scheduler(std::shared_ptr<algo::Algorithm> algo, size_t workers_count) : algo_(algo) {
     workers_.reserve(workers_count);
     for (size_t i = 0; i != workers_count; ++i) {
         SpawnWorker();
@@ -46,7 +45,8 @@ Scheduler::~Scheduler() {
 }
 
 void Scheduler::Spawn(FiberRoutine routine) {
-    Schedule(Fiber::CreateFiber(routine));
+    Fiber* fiber = Fiber::CreateFiber(routine);
+    algo_->Add(fiber);
     started_.store(true);
 }
 
@@ -92,6 +92,16 @@ void Scheduler::Execute(Fiber* fiber) {
     SwitchTo(fiber);
 }
 
+void Scheduler::Reschedule(Fiber* fiber) {
+    if (fiber->State() == FiberState::Terminated) {
+        Destroy(fiber);
+    } else if (fiber->State() == FiberState::Runnable) {
+        algo_->Add(fiber);
+    } else {
+        throw std::runtime_error("Unknown fiber state");
+    }
+}
+
 ////////////////////////////////////////////////////////////////////
 
 void Scheduler::SpawnWorker() {
@@ -116,7 +126,7 @@ void Scheduler::WorkerSetup(Worker* me) {
 
 void Scheduler::WorkerLoop() {
     while (!shutdown_.load()) {
-        Fiber* fiber = PickNextFiber();
+        Fiber* fiber = algo_->PickNextFiber();
         if (!fiber) {
             continue;
         }

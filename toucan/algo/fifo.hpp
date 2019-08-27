@@ -8,21 +8,18 @@
 namespace toucan {
 namespace algo {
 
-class FIFOScheduler : public Scheduler {
+class FIFO : public Algorithm {
   public:
-    FIFOScheduler() {
+    FIFO() {
     }
 
-    FIFOScheduler(size_t workers_count) : Scheduler(workers_count) {
-    }
-
-    virtual ~FIFOScheduler() {
+    virtual ~FIFO() {
     }
 
   protected:
     virtual Fiber* PickNextFiber() final;
-    virtual void Schedule(Fiber* fiber) final;
-    virtual void Reschedule(Fiber* fiber) final;
+    virtual void Add(Fiber* fiber) final;
+    virtual bool HasFibers() final;
 
   private:
     std::queue<Fiber*> ready_queue_;

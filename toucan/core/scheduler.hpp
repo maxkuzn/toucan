@@ -3,6 +3,8 @@
 #include <toucan/core/api.hpp>
 #include <toucan/core/fiber.hpp>
 
+#include <toucan/algo/algorithm.hpp>
+
 #include <thread>
 #include <condition_variable>
 #include <atomic>
@@ -21,8 +23,9 @@ struct Worker {
 
 class Scheduler {
   public:
-    Scheduler(size_t workers_count = std::thread::hardware_concurrency());
-    virtual ~Scheduler();
+    Scheduler(std::shared_ptr<algo::Algorithm> algo, size_t workers_count = std::thread::hardware_concurrency());
+
+    ~Scheduler();
 
     void Spawn(FiberRoutine routine);
     void Yield();
@@ -30,19 +33,15 @@ class Scheduler {
 
     void Shutdown();
 
-  protected:  // some of them private ?
-    virtual Fiber* PickNextFiber() = 0;
-    virtual void Schedule(Fiber* fiber) = 0;
-    virtual void Reschedule(Fiber* fiber) = 0;
-
+  private:
     void Execute(Fiber* fiber);
+    void Reschedule(Fiber* fiber);
     void Destroy(Fiber* fiber);
 
     const std::vector<Worker>& GetWorkers() const {
         return workers_;
     }
 
-  private:
     void SwitchTo(Fiber* fiber);
     void SwitchToScheduler();
 
@@ -58,6 +57,8 @@ class Scheduler {
 
     std::atomic<bool> started_{false};
     std::atomic<bool> shutdown_{false};
+
+    std::shared_ptr<algo::Algorithm> algo_;
 };
 
 Fiber* GetCurrentFiber();

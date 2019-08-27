@@ -3,7 +3,7 @@
 namespace toucan {
 namespace algo {
 
-Fiber* FIFOScheduler::PickNextFiber() {
+Fiber* FIFO::PickNextFiber() {
     std::unique_lock<std::mutex> guard(mutex_);
     if (ready_queue_.empty()) {
         return nullptr;
@@ -13,29 +13,15 @@ Fiber* FIFOScheduler::PickNextFiber() {
     return next;
 }
 
-void FIFOScheduler::Schedule(Fiber* fiber) {
+void FIFO::Add(Fiber* fiber) {
     std::unique_lock<std::mutex> guard(mutex_);
     ready_queue_.push(fiber);
 }
 
-void FIFOScheduler::Reschedule(Fiber* fiber) {
-    switch (fiber->State()) {
-    case FiberState::Runnable:
-        {
-            std::unique_lock<std::mutex> guard(mutex_);
-            ready_queue_.push(fiber);
-        }
-        break;
-    case FiberState::Terminated:
-        Destroy(fiber);
-        break;
-    default:
-        throw std::runtime_error("Unknown fiber state");
-        break;
-    }
+bool FIFO::HasFibers() {
+    std::unique_lock<std::mutex> guard(mutex_);
+    return !ready_queue_.empty();
 }
-
-
 
 }  // namespace algo
 }  // namespace toucan
