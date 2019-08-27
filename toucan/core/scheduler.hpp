@@ -27,6 +27,11 @@ class Scheduler {
 
     ~Scheduler();
 
+    Scheduler(const Scheduler&) = delete;
+    Scheduler(Scheduler&&) = delete;
+    Scheduler& operator=(const Scheduler&) = delete;
+    Scheduler& operator=(Scheduler&&) = delete;
+
     void Spawn(FiberRoutine routine);
     void Yield();
     void Terminate();
