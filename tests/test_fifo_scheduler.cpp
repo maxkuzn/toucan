@@ -21,15 +21,32 @@ TEST(FIFO, Constructor) {
 // not stable test
 TEST(FIFO, Spawn) {
     Scheduler scheduler(std::make_shared<FIFO>());
-    bool flag = false;
-    scheduler.Spawn([&] { flag = true; });
-    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    std::atomic<bool> flag = false;
+    scheduler.Spawn([&] {
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+        flag = true;
+    });
+    ASSERT_FALSE(flag);
+    std::this_thread::sleep_for(std::chrono::milliseconds(20));
     ASSERT_TRUE(flag);
 }
 
+TEST(FIFO, Wait) {
+    Scheduler scheduler(std::make_shared<FIFO>());
+    std::atomic<bool> flag = false;
+    scheduler.Spawn([&] {
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        flag = true;
+    });
+    ASSERT_FALSE(flag);
+    scheduler.WaitAll();
+    ASSERT_TRUE(flag);
+}
+        
+
 TEST(FIFO, Yield) {
     Scheduler scheduler(std::make_shared<FIFO>());
-    bool flag = false;
+    std::atomic<bool> flag = false;
     scheduler.Spawn([&] {
         Yield();
         flag = true;
@@ -40,7 +57,7 @@ TEST(FIFO, Yield) {
 
 TEST(FIFO, Terminate) {
     Scheduler scheduler(std::make_shared<FIFO>());
-    bool flag = false;
+    std::atomic<bool> flag = false;
     scheduler.Spawn([&] {
         Terminate();
         flag = true;
@@ -51,7 +68,7 @@ TEST(FIFO, Terminate) {
 
 TEST(FIFO, APISPawn) {
     Scheduler scheduler(std::make_shared<FIFO>());
-    bool flag = false;
+    std::atomic<bool> flag = false;
     scheduler.Spawn([&] {
         Spawn([&] {
             flag = true;

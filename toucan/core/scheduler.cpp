@@ -45,9 +45,17 @@ Scheduler::~Scheduler() {
 }
 
 void Scheduler::Spawn(FiberRoutine routine) {
+    ++tasks_;
     Fiber* fiber = Fiber::CreateFiber(routine);
     algo_->Add(fiber);
     started_.store(true);
+}
+
+void Scheduler::WaitAll() {
+    std::unique_lock<std::mutex> lock(wait_mutex_);
+    wait_cv_.wait(lock, [&] {
+        return tasks_.load() == 0;
+    });
 }
 
 void Scheduler::Yield() {
@@ -95,6 +103,9 @@ void Scheduler::Execute(Fiber* fiber) {
 void Scheduler::Reschedule(Fiber* fiber) {
     if (fiber->State() == FiberState::Terminated) {
         Destroy(fiber);
+        if (--tasks_ == 0) {
+            wait_cv_.notify_all();
+        }
     } else if (fiber->State() == FiberState::Runnable) {
         algo_->Add(fiber);
     } else {

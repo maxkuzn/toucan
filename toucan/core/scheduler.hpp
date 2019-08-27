@@ -33,6 +33,8 @@ class Scheduler {
     Scheduler& operator=(Scheduler&&) = delete;
 
     void Spawn(FiberRoutine routine);
+    void WaitAll();
+
     void Yield();
     void Terminate();
 
@@ -59,6 +61,10 @@ class Scheduler {
 
   private:
     std::vector<Worker> workers_;
+
+    std::atomic<uint64_t> tasks_{0};
+    std::mutex wait_mutex_;
+    std::condition_variable wait_cv_;
 
     std::atomic<bool> started_{false};
     std::atomic<bool> shutdown_{false};
