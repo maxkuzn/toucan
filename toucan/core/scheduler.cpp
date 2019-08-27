@@ -48,7 +48,6 @@ void Scheduler::Spawn(FiberRoutine routine) {
     ++tasks_;
     Fiber* fiber = Fiber::CreateFiber(routine);
     algo_->Add(fiber);
-    started_.store(true);
 }
 
 void Scheduler::WaitAll() {
@@ -78,7 +77,6 @@ void Scheduler::Destroy(Fiber* fiber) {
 }
 
 void Scheduler::Shutdown() {
-    started_.store(true);
     shutdown_.store(true);
     for (auto& worker : workers_) {
         worker.thread.join();
@@ -131,8 +129,6 @@ void Scheduler::WorkerMain(Worker* me) {
 void Scheduler::WorkerSetup(Worker* me) {
     me->scheduler = this;
     SetCurrentWorker(me);
-    while (!started_.load()) {
-    }
 }
 
 void Scheduler::WorkerLoop() {
