@@ -72,6 +72,9 @@ void Scheduler::Terminate() {
 
 void Scheduler::Destroy(Fiber* fiber) {
     delete fiber;
+    if (--tasks_ == 0) {
+        wait_cv_.notify_all();
+    }
 }
 
 void Scheduler::Shutdown() {
@@ -103,9 +106,6 @@ void Scheduler::Execute(Fiber* fiber) {
 void Scheduler::Reschedule(Fiber* fiber) {
     if (fiber->State() == FiberState::Terminated) {
         Destroy(fiber);
-        if (--tasks_ == 0) {
-            wait_cv_.notify_all();
-        }
     } else if (fiber->State() == FiberState::Runnable) {
         algo_->Add(fiber);
     } else {
