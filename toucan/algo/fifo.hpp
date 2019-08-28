@@ -8,7 +8,7 @@
 namespace toucan {
 namespace algo {
 
-class FIFO : public Algorithm {
+class FIFO : public IAlgorithm {
   public:
     FIFO() {
     }

@@ -24,7 +24,7 @@ struct Worker {
 
 class Scheduler {
   public:
-    Scheduler(std::shared_ptr<algo::Algorithm> algo, size_t workers_count = std::thread::hardware_concurrency());
+    Scheduler(std::shared_ptr<algo::IAlgorithm> algo, size_t workers_count = std::thread::hardware_concurrency());
 
     ~Scheduler();
 
@@ -70,7 +70,7 @@ class Scheduler {
     twist::atomic<bool> started_{false};
     twist::atomic<bool> shutdown_{false};
 
-    std::shared_ptr<algo::Algorithm> algo_;
+    std::shared_ptr<algo::IAlgorithm> algo_;
 };
 
 Fiber* GetCurrentFiber();

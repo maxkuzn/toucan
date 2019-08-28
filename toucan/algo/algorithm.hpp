@@ -3,18 +3,18 @@
 namespace toucan {
 namespace algo {
 
-class Algorithm {
+class IAlgorithm {
   public:
-    Algorithm() {
+    IAlgorithm() {
     }
 
-    virtual ~Algorithm() {
+    virtual ~IAlgorithm() {
     }
 
-    Algorithm(const Algorithm&) = delete;
-    Algorithm(Algorithm&&) = delete;
-    Algorithm& operator=(const Algorithm&) = delete;
-    Algorithm& operator=(Algorithm&&) = delete;
+    IAlgorithm(const IAlgorithm&) = delete;
+    IAlgorithm(IAlgorithm&&) = delete;
+    IAlgorithm& operator=(const IAlgorithm&) = delete;
+    IAlgorithm& operator=(IAlgorithm&&) = delete;
 
     virtual void SetWorkersNum(size_t workers_num) = 0;
     virtual void SetupWorker() = 0;

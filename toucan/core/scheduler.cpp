@@ -33,7 +33,7 @@ static void SetCurrentFiber(Fiber* fiber) {
 
 ////////////////////////////////////////////////////////////////////
 
-Scheduler::Scheduler(std::shared_ptr<algo::Algorithm> algo, size_t workers_num) : algo_(algo) {
+Scheduler::Scheduler(std::shared_ptr<algo::IAlgorithm> algo, size_t workers_num) : algo_(algo) {
     if (workers_num == 0) {
         throw std::runtime_error("Workers num should be above zero");
     }
