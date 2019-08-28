@@ -51,7 +51,7 @@ TEST(FIFO, Yield) {
         Yield();
         flag = true;
     });
-    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    scheduler.WaitAll();
     ASSERT_TRUE(flag);
 }
 
@@ -62,7 +62,7 @@ TEST(FIFO, Terminate) {
         Terminate();
         flag = true;
     });
-    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    scheduler.WaitAll();
     ASSERT_FALSE(flag);
 }
 
@@ -74,7 +74,7 @@ TEST(FIFO, APISPawn) {
             flag = true;
         });
     });
-    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    scheduler.WaitAll();
     ASSERT_TRUE(flag);
 }
 
@@ -87,7 +87,31 @@ TEST(FIFO, MoreWork) {
             ++count;
         });
     }
-    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    scheduler.WaitAll();
     ASSERT_EQ(count.load(), kIncrs);
+}
+
+TEST(FIFO, Parallel) {
+    Scheduler scheduler(std::make_shared<FIFO>());
+    std::atomic<size_t> count = 0;
+    static const size_t kTasks = 8;
+    static const size_t kCycles = 10;
+    static const auto kIdleTime = std::chrono::milliseconds(10);
+    auto task = [&] {
+        for (size_t i = 0; i != kCycles; ++i) {
+            std::this_thread::sleep_for(kIdleTime);
+            Yield();
+        }
+        ++count;
+    };
+    auto start = std::chrono::system_clock::now();
+    for (size_t i = 0; i != kTasks; ++i) {
+        scheduler.Spawn(task);
+    }
+    ASSERT_NE(count, kTasks);
+    scheduler.WaitAll();
+    auto end = std::chrono::system_clock::now();
+    ASSERT_LT(2 * (end - start), kTasks * kCycles * kIdleTime);
+    ASSERT_EQ(count, kTasks);
 }
 

@@ -3,8 +3,6 @@
 #include <toucan/core/fiber.hpp>
 #include <thread>
 
-#include <iostream>
-
 namespace toucan {
 
 static thread_local Worker* current_worker = nullptr;
