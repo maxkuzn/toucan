@@ -6,9 +6,10 @@
 #include <toucan/algo/algorithm.hpp>
 
 #include <thread>
-#include <condition_variable>
-#include <atomic>
-#include <mutex>
+
+#include <twist/stdlike/atomic.hpp>
+#include <twist/stdlike/mutex.hpp>
+#include <twist/stdlike/condition_variable.hpp>
 
 namespace toucan {
 
@@ -62,12 +63,12 @@ class Scheduler {
   private:
     std::vector<Worker> workers_;
 
-    std::atomic<uint64_t> tasks_{0};
-    std::mutex wait_mutex_;
-    std::condition_variable wait_cv_;
+    twist::atomic<uint64_t> tasks_{0};
+    twist::mutex wait_mutex_;
+    twist::condition_variable wait_cv_;
 
-    std::atomic<bool> started_{false};
-    std::atomic<bool> shutdown_{false};
+    twist::atomic<bool> started_{false};
+    twist::atomic<bool> shutdown_{false};
 
     std::shared_ptr<algo::Algorithm> algo_;
 };

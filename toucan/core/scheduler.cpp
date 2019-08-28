@@ -33,9 +33,13 @@ static void SetCurrentFiber(Fiber* fiber) {
 
 ////////////////////////////////////////////////////////////////////
 
-Scheduler::Scheduler(std::shared_ptr<algo::Algorithm> algo, size_t workers_count) : algo_(algo) {
-    workers_.reserve(workers_count);
-    for (size_t i = 0; i != workers_count; ++i) {
+Scheduler::Scheduler(std::shared_ptr<algo::Algorithm> algo, size_t workers_num) : algo_(algo) {
+    if (workers_num == 0) {
+        throw std::runtime_error("Workers num should be above zero");
+    }
+    algo_->SetWorkersNum(workers_num);
+    workers_.reserve(workers_num);
+    for (size_t i = 0; i != workers_num; ++i) {
         SpawnWorker();
     }
 }
@@ -51,7 +55,7 @@ void Scheduler::Spawn(FiberRoutine routine) {
 }
 
 void Scheduler::WaitAll() {
-    std::unique_lock<std::mutex> lock(wait_mutex_);
+    std::unique_lock<twist::mutex> lock(wait_mutex_);
     wait_cv_.wait(lock, [&] {
         return tasks_.load() == 0;
     });
@@ -78,6 +82,7 @@ void Scheduler::Destroy(Fiber* fiber) {
 
 void Scheduler::Shutdown() {
     shutdown_.store(true);
+    algo_->Shutdown();
     for (auto& worker : workers_) {
         worker.thread.join();
     }
@@ -129,6 +134,7 @@ void Scheduler::WorkerMain(Worker* me) {
 void Scheduler::WorkerSetup(Worker* me) {
     me->scheduler = this;
     SetCurrentWorker(me);
+    algo_->SetupWorker();
 }
 
 void Scheduler::WorkerLoop() {

@@ -4,7 +4,7 @@ namespace toucan {
 namespace algo {
 
 Fiber* FIFO::PickNextFiber() {
-    std::unique_lock<std::mutex> guard(mutex_);
+    std::unique_lock<twist::mutex> guard(mutex_);
     if (ready_queue_.empty()) {
         return nullptr;
     }
@@ -14,12 +14,12 @@ Fiber* FIFO::PickNextFiber() {
 }
 
 void FIFO::Add(Fiber* fiber) {
-    std::unique_lock<std::mutex> guard(mutex_);
+    std::unique_lock<twist::mutex> guard(mutex_);
     ready_queue_.push(fiber);
 }
 
 bool FIFO::HasFibers() {
-    std::unique_lock<std::mutex> guard(mutex_);
+    std::unique_lock<twist::mutex> guard(mutex_);
     return !ready_queue_.empty();
 }
 
