@@ -10,4 +10,5 @@ enable_language(ASM)
 add_library(toucan STATIC ${LIB_CXX_SOURCES} ${LIB_ASM_SOURCES} ${LIB_HEADERS})
 target_include_directories(toucan PUBLIC ${LIB_INCLUDE_PATH})
 target_link_libraries(toucan PUBLIC pthread)
+target_link_libraries(toucan PUBLIC twist)
 

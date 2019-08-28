@@ -9,6 +9,8 @@ add_compile_options(-Wall -Wextra -Wpedantic -g)
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "bin")
 
+add_subdirectory(libs)
+
 add_subdirectory(toucan)
 
 option(TOUCAN_TESTS "Enable toucan library tests" OFF)
