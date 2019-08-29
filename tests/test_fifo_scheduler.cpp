@@ -15,10 +15,9 @@ TEST(FIFO, DefaultConstructor) {
 }
 
 TEST(FIFO, Constructor) {
-    Scheduler scheduler(std::make_shared<FIFO>(), 2);
+    Scheduler scheduler(std::make_shared<FIFO>(), 5);
 }
 
-// not stable test
 TEST(FIFO, Spawn) {
     Scheduler scheduler(std::make_shared<FIFO>());
     std::atomic<bool> flag = false;
@@ -46,24 +45,36 @@ TEST(FIFO, Wait) {
 
 TEST(FIFO, Yield) {
     Scheduler scheduler(std::make_shared<FIFO>());
-    std::atomic<bool> flag = false;
-    scheduler.Spawn([&] {
-        Yield();
-        flag = true;
-    });
+    const size_t kIters = 100;
+    const size_t kTasks = 100;
+    std::atomic<size_t> count = 0;
+    auto task = [&] {
+        for (size_t i = 0; i != kIters; ++i) {
+            Yield();
+        }
+        ++count;
+    };
+    for (size_t i = 0; i != kTasks; ++i) {
+        scheduler.Spawn(task);
+    }
     scheduler.WaitAll();
-    ASSERT_TRUE(flag);
+    ASSERT_EQ(count, kTasks);
 }
 
 TEST(FIFO, Terminate) {
     Scheduler scheduler(std::make_shared<FIFO>());
-    std::atomic<bool> flag = false;
-    scheduler.Spawn([&] {
-        Terminate();
-        flag = true;
-    });
+    std::atomic<int> count = 0;
+    const size_t kTasks = 100;
+    for (size_t i = 0; i != kTasks; ++i) {
+        scheduler.Spawn([&count, i] {
+            if (i % 2 == 0) {
+                Terminate();
+            }
+            ++count;
+        });
+    }
     scheduler.WaitAll();
-    ASSERT_FALSE(flag);
+    ASSERT_EQ(2 * count, kTasks);
 }
 
 TEST(FIFO, APISPawn) {
@@ -78,25 +89,59 @@ TEST(FIFO, APISPawn) {
     ASSERT_TRUE(flag);
 }
 
-TEST(FIFO, MoreWork) {
+void recursive_function(size_t layer, std::atomic<size_t>& count) {
+    Spawn([layer, &count] {
+        if (layer > 0) {
+            recursive_function(layer - 1, count);
+        }
+        ++count;
+    });
+}
+
+TEST(FIFO, Recursive) {
     Scheduler scheduler(std::make_shared<FIFO>());
     std::atomic<size_t> count{0};
-    static const size_t kIncrs = 10000;
-    for (size_t i = 0; i != kIncrs; ++i) {
-        scheduler.Spawn([&] {
-            ++count;
-        });
-    }
+    const size_t kLayers = 1000;
+    scheduler.Spawn([kLayers, &count] {
+        recursive_function(kLayers, count);
+    });
     scheduler.WaitAll();
-    ASSERT_EQ(count.load(), kIncrs);
+    ASSERT_EQ(count.load(), kLayers + 1);
+}
+
+void recursive_binary_function(size_t layer, std::atomic<size_t>& count) {
+    Spawn([layer, &count] {
+        if (layer > 0) {
+            recursive_binary_function(layer - 1, count);
+        }
+        ++count;
+    });
+    Spawn([layer, &count] {
+        if (layer > 0) {
+            recursive_binary_function(layer - 1, count);
+        }
+        ++count;
+    });
+}
+
+TEST(FIFO, RecursiveBinaryTree) {
+    Scheduler scheduler(std::make_shared<FIFO>());
+    std::atomic<size_t> count{0};
+    const size_t kLayers = 10;
+    scheduler.Spawn([kLayers, &count] {
+        recursive_binary_function(kLayers, count);
+        ++count;
+    });
+    scheduler.WaitAll();
+    ASSERT_EQ(count.load(), (1u<<(kLayers + 2)) - 1);
 }
 
 TEST(FIFO, Parallel) {
-    Scheduler scheduler(std::make_shared<FIFO>());
+    Scheduler scheduler(std::make_shared<FIFO>(), 4);
     std::atomic<size_t> count = 0;
-    static const size_t kTasks = 8;
-    static const size_t kCycles = 10;
-    static const auto kIdleTime = std::chrono::milliseconds(10);
+    const size_t kTasks = 8;
+    const size_t kCycles = 10;
+    const auto kIdleTime = std::chrono::milliseconds(10);
     auto task = [&] {
         for (size_t i = 0; i != kCycles; ++i) {
             std::this_thread::sleep_for(kIdleTime);
