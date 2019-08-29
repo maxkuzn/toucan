@@ -2,6 +2,8 @@
 
 #include <toucan/core/scheduler.hpp>
 
+#include <toucan/support/assert.hpp>
+
 namespace toucan {
 
 Fiber* Fiber::CreateFiber(FiberRoutine routine) {
@@ -32,6 +34,21 @@ static void FiberFoo() {
 
 void Fiber::SetupRoutine(Fiber* fiber) {
     fiber->context_.Setup(fiber->stack_, FiberFoo);
+}
+
+void Fiber::GetOwnership() {
+    size_t tries = 0;
+    Worker* expected;
+    expected = nullptr;
+    Worker* curr_worker = GetCurrentWorker();
+    while (!owner_.compare_exchange_weak(expected, curr_worker)) {
+        expected = nullptr;
+        // TODO: may be this_thread::yield()
+    }
+}
+
+bool Fiber::IsOwner() const {
+    return owner_ == GetCurrentWorker();
 }
 
 }  // namespace toucan

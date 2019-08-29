@@ -1,6 +1,9 @@
 #pragma once
 
+#include <toucan/core/fiber.hpp>
+
 namespace toucan {
+
 namespace algo {
 
 class IAlgorithm {

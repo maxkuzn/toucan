@@ -1,10 +1,8 @@
 #pragma once
 
-#include <functional>
+#include <toucan/core/fiber.hpp>
 
 namespace toucan {
-
-using FiberRoutine = std::function<void()>;
 
 void Yield();
 

@@ -3,7 +3,6 @@
 #include <sys/mman.h>
 #include <unistd.h>
 
-// TODO: remove
 #include <stdexcept>
 
 namespace toucan {
