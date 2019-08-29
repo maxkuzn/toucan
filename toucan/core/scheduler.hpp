@@ -5,6 +5,8 @@
 
 #include <toucan/algo/algorithm.hpp>
 
+#include <toucan/support/spinlock.hpp>
+
 #include <thread>
 
 #include <twist/stdlike/atomic.hpp>
@@ -41,6 +43,9 @@ class Scheduler {
 
     void Shutdown();
 
+    void Suspend(SpinLock& sl);
+    void WakeUp(Fiber* fiber);
+
   private:
     void Execute(Fiber* fiber);
     void Reschedule(Fiber* fiber);
@@ -73,6 +78,7 @@ class Scheduler {
     std::shared_ptr<algo::IAlgorithm> algo_;
 };
 
+Worker* GetCurrentWorker();
 Fiber* GetCurrentFiber();
 Scheduler* GetCurrentScheduler();
 

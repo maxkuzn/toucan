@@ -1,6 +1,7 @@
 #include <toucan/core/scheduler.hpp>
 
 #include <toucan/core/fiber.hpp>
+#include <toucan/support/assert.hpp>
 #include <thread>
 
 namespace toucan {
@@ -10,6 +11,7 @@ static thread_local Worker* current_worker = nullptr;
 // next functions avaliable only in worker threads
 
 Worker* GetCurrentWorker() {
+    ASSERT(current_worker, "Should be in worker");
     return current_worker;
 }
 
@@ -18,15 +20,15 @@ static void SetCurrentWorker(Worker* worker) {
 }
 
 Scheduler* GetCurrentScheduler() {
-    return current_worker->scheduler;
+    return GetCurrentWorker()->scheduler;
 }
 
 Fiber* GetCurrentFiber() {
-    return current_worker->fiber;
+    return GetCurrentWorker()->fiber;
 }
 
 static void SetCurrentFiber(Fiber* fiber) {
-    current_worker->fiber = fiber;
+    GetCurrentWorker()->fiber = fiber;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -49,6 +51,7 @@ Scheduler::~Scheduler() {
 void Scheduler::Spawn(FiberRoutine routine) {
     ++tasks_;
     Fiber* fiber = Fiber::CreateFiber(routine);
+    fiber->SetState(FiberState::Runnable);
     algo_->Add(fiber);
 }
 
@@ -93,25 +96,47 @@ void Scheduler::SwitchTo(Fiber* fiber) {
 
 void Scheduler::SwitchToScheduler() {
     Fiber* fiber = GetCurrentFiber();
-    SetCurrentFiber(nullptr);
     fiber->Context().SwitchTo(GetCurrentWorker()->context);
 }
 
 void Scheduler::Execute(Fiber* fiber) {
-    auto worker = GetCurrentWorker();
-    worker->fiber = fiber;
+    fiber->GetOwnership();
     fiber->SetState(FiberState::Running);
+    SetCurrentFiber(fiber);
     SwitchTo(fiber);
 }
 
 void Scheduler::Reschedule(Fiber* fiber) {
-    if (fiber->State() == FiberState::Terminated) {
+    ASSERT(fiber->IsOwner(), "Reschedule should only owner");
+    SetCurrentFiber(nullptr);
+    auto state = fiber->State();
+    if (state == FiberState::Terminated) {
         Destroy(fiber);
-    } else if (fiber->State() == FiberState::Runnable) {
+    } else if (state == FiberState::Runnable) {
+        fiber->ResetOwner();
         algo_->Add(fiber);
+    } else if (state == FiberState::Suspended) {
+        fiber->ResetOwner();
+    } else if (state == FiberState::Running) {
+        ASSERT(state != FiberState::Running, "Fiber running in reschedule");
     } else {
-        throw std::runtime_error("Unknown fiber state");
+        ASSERT(false, "Unknown fiber state");
     }
+}
+
+void Scheduler::Suspend(SpinLock& sl) {
+    Fiber* fiber = GetCurrentFiber();
+    fiber->SetState(FiberState::Suspended);
+    sl.unlock();
+    SwitchToScheduler();
+    sl.lock();
+}
+
+void Scheduler::WakeUp(Fiber* fiber) {
+    fiber->GetOwnership();
+    fiber->SetState(FiberState::Runnable);
+    fiber->ResetOwner();
+    algo_->Add(fiber);
 }
 
 ////////////////////////////////////////////////////////////////////
