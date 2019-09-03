@@ -17,7 +17,7 @@ Fiber* Fiber::CreateFiber(FiberRoutine routine) {
     return fiber;
 }
 
-static void FiberFoo() {
+static void FiberMain() {
     Fiber* fiber = GetCurrentFiber();
 
     auto routine = fiber->Routine();
@@ -33,7 +33,7 @@ static void FiberFoo() {
 }
 
 void Fiber::SetupRoutine(Fiber* fiber) {
-    fiber->context_.Setup(fiber->stack_, FiberFoo);
+    fiber->context_.Setup(fiber->stack_, FiberMain);
 }
 
 void Fiber::GetOwnership() {
