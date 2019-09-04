@@ -6,6 +6,7 @@
 #include <toucan/algo/algorithm.hpp>
 
 #include <toucan/support/spinlock.hpp>
+#include <toucan/support/assert.hpp>
 
 #include <thread>
 
@@ -22,6 +23,13 @@ struct Worker {
     Fiber* fiber = nullptr;
     ExecutionContext context;
     std::thread thread;
+    SpinLock* lock = nullptr;
+
+    void Unlock() {
+        ASSERT(lock != nullptr, "Should unlock only locked spinlock");
+        lock->unlock();
+        lock = nullptr;
+    }
 };
 
 class Scheduler {

@@ -3,6 +3,8 @@
 #include <toucan/core/context.hpp>
 #include <toucan/core/stack.hpp>
 
+#include <toucan/support/intrusive_list_node.hpp>
+
 #include <twist/stdlike/atomic.hpp>
 
 #include <functional>
@@ -20,7 +22,7 @@ enum class FiberState {
     Terminated
 };
 
-class Fiber {
+class Fiber : public IntrusiveListNode<Fiber> {
   public:
     FiberState State() const {
         return state_;
@@ -38,13 +40,6 @@ class Fiber {
         return context_;
     }
 
-    void GetOwnership();
-    bool IsOwner() const;
-    void ResetOwner() {
-        owner_.store(nullptr);
-    }
-
-
     static Fiber* CreateFiber(FiberRoutine routine);
     static void SetupRoutine(Fiber* fiber);
 
@@ -52,7 +47,6 @@ class Fiber {
     FiberStack stack_;
     ExecutionContext context_;
     twist::atomic<FiberState> state_;
-    twist::atomic<Worker*> owner_{nullptr};
     FiberRoutine routine_;
 };
 

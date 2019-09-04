@@ -100,23 +100,20 @@ void Scheduler::SwitchToScheduler() {
 }
 
 void Scheduler::Execute(Fiber* fiber) {
-    fiber->GetOwnership();
     fiber->SetState(FiberState::Running);
     SetCurrentFiber(fiber);
     SwitchTo(fiber);
 }
 
 void Scheduler::Reschedule(Fiber* fiber) {
-    ASSERT(fiber->IsOwner(), "Reschedule should only owner");
     SetCurrentFiber(nullptr);
     auto state = fiber->State();
     if (state == FiberState::Terminated) {
         Destroy(fiber);
     } else if (state == FiberState::Runnable) {
-        fiber->ResetOwner();
         algo_->Add(fiber);
     } else if (state == FiberState::Suspended) {
-        fiber->ResetOwner();
+        GetCurrentWorker()->Unlock();
     } else if (state == FiberState::Running) {
         ASSERT(state != FiberState::Running, "Fiber running in reschedule");
     } else {
@@ -125,17 +122,13 @@ void Scheduler::Reschedule(Fiber* fiber) {
 }
 
 void Scheduler::Suspend(SpinLock& sl) {
-    Fiber* fiber = GetCurrentFiber();
-    fiber->SetState(FiberState::Suspended);
-    sl.unlock();
+    GetCurrentFiber()->SetState(FiberState::Suspended);
+    GetCurrentWorker()->lock = &sl;
     SwitchToScheduler();
-    sl.lock();
 }
 
 void Scheduler::WakeUp(Fiber* fiber) {
-    fiber->GetOwnership();
     fiber->SetState(FiberState::Runnable);
-    fiber->ResetOwner();
     algo_->Add(fiber);
 }
 
