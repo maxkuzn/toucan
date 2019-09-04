@@ -19,6 +19,7 @@ TEST(Mutex, LockUnlock) {
         mutex.Lock();
         mutex.Unlock();
     });
+    scheduler.WaitAll();
 }
 
 TEST(Mutex, Explicit) {
