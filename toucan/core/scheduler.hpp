@@ -36,6 +36,8 @@ class Scheduler {
   public:
     Scheduler(std::shared_ptr<algo::IAlgorithm> algo, size_t workers_count = std::thread::hardware_concurrency());
 
+    // User should call WaitAll before destructore
+    // otherwise some of tasks may be uncompleted
     ~Scheduler();
 
     Scheduler(const Scheduler&) = delete;
@@ -49,6 +51,8 @@ class Scheduler {
     void Yield();
     void Terminate();
 
+    // User should call WaitAll before shutdown
+    // otherwise some of tasks may be uncompleted
     void Shutdown();
 
     void Suspend(SpinLock& sl);
