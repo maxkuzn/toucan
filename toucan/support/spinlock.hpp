@@ -20,16 +20,8 @@ class SpinLock {
         }
     }
 
-    void lock() {
-        Lock();
-    }
-
     void Unlock() {
         locked_.store(false);
-    }
-
-    void unlock() {
-        Unlock();
     }
 
   private:

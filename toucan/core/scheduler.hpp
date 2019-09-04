@@ -27,7 +27,7 @@ struct Worker {
 
     void Unlock() {
         ASSERT(lock != nullptr, "Should unlock only locked spinlock");
-        lock->unlock();
+        lock->Unlock();
         lock = nullptr;
     }
 };

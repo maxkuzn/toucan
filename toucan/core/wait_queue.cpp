@@ -5,7 +5,7 @@
 namespace toucan {
 
 void WaitQueue::Wait() {
-    sl_.lock();
+    sl_.Lock();
     Node* curr = GetCurrentFiber();
     if (tail_) {
         tail_->next = curr;
@@ -18,9 +18,9 @@ void WaitQueue::Wait() {
 }
 
 void WaitQueue::WakeOne() {
-    sl_.lock();
+    sl_.Lock();
     if (!head_) {
-        sl_.unlock();
+        sl_.Unlock();
         return;
     }
     Fiber* to_wake_up = head_->Get();
@@ -28,18 +28,18 @@ void WaitQueue::WakeOne() {
     if (!head_) {
         tail_ = nullptr;
     }
-    sl_.unlock();
+    sl_.Unlock();
     to_wake_up->Unlink();
     GetCurrentScheduler()->WakeUp(to_wake_up);
 }
 
 void WaitQueue::WakeAll() {
     Node* head = nullptr;
-    sl_.lock();
+    sl_.Lock();
     head = head_;
     head_ = nullptr;
     tail_ = nullptr;
-    sl_.unlock();
+    sl_.Unlock();
     while (head) {
         Node* next = head->next;
         head->Unlink();
