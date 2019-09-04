@@ -16,8 +16,8 @@ TEST(Mutex, LockUnlock) {
     Scheduler scheduler(std::make_shared<FIFO>(), 4);
     toucan::Mutex mutex;
     scheduler.Spawn([&] {
-        mutex.lock();
-        mutex.unlock();
+        mutex.Lock();
+        mutex.Unlock();
     });
 }
 
@@ -30,9 +30,9 @@ TEST(Mutex, Explicit) {
     std::atomic<size_t> count = 0;
     auto task = [&] {
         for (size_t i = 0; i != kIters; ++i) {
-            mutex.lock();
+            mutex.Lock();
             std::this_thread::sleep_for(kIdleTime);
-            mutex.unlock();
+            mutex.Unlock();
         }
         ++count;
     };

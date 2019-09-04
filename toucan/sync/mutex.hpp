@@ -31,25 +31,13 @@ class Mutex {
         }
     }
 
-    void lock() {
-        Lock();
-    }
-
     void Unlock() {
         locked_.store(false);
         wait_queue_.WakeOne();
     }
 
-    void unlock() {
-        Unlock();
-    }
-
     bool TryLock() {
         return !locked_.exchange(true);
-    }
-
-    bool try_lock() {
-        return TryLock();
     }
 
   private:
