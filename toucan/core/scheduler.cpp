@@ -77,6 +77,7 @@ void Scheduler::Terminate() {
 void Scheduler::Destroy(Fiber* fiber) {
     delete fiber;
     if (--tasks_ == 0) {
+        std::unique_lock<twist::mutex> lock(wait_mutex_);
         wait_cv_.notify_all();
     }
 }
