@@ -19,7 +19,7 @@ TEST(FIFO, Constructor) {
 }
 
 TEST(FIFO, SimpleSpawn) {
-    for (size_t i = 0; i != 10000; ++i) {
+    for (size_t i = 0; i != 100; ++i) {
         Scheduler scheduler(std::make_shared<FIFO>());
         scheduler.Spawn([&] {
         });
