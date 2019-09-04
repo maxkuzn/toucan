@@ -18,6 +18,15 @@ TEST(FIFO, Constructor) {
     Scheduler scheduler(std::make_shared<FIFO>(), 5);
 }
 
+TEST(FIFO, SimpleSpawn) {
+    for (size_t i = 0; i != 10000; ++i) {
+        Scheduler scheduler(std::make_shared<FIFO>());
+        scheduler.Spawn([&] {
+        });
+        scheduler.WaitAll();
+    }
+}
+
 TEST(FIFO, Spawn) {
     Scheduler scheduler(std::make_shared<FIFO>());
     std::atomic<bool> flag = false;
