@@ -31,11 +31,11 @@ TEST(FIFO, Spawn) {
     Scheduler scheduler(std::make_shared<FIFO>());
     std::atomic<bool> flag = false;
     scheduler.Spawn([&] {
-        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+        std::this_thread::sleep_for(std::chrono::milliseconds(1));
         flag = true;
     });
     ASSERT_FALSE(flag);
-    std::this_thread::sleep_for(std::chrono::milliseconds(20));
+    std::this_thread::sleep_for(std::chrono::milliseconds(50));
     ASSERT_TRUE(flag);
 }
 
@@ -158,13 +158,13 @@ TEST(FIFO, Parallel) {
         }
         ++count;
     };
-    auto start = std::chrono::system_clock::now();
+    auto start = std::chrono::steady_clock::now();
     for (size_t i = 0; i != kTasks; ++i) {
         scheduler.Spawn(task);
     }
     ASSERT_NE(count, kTasks);
     scheduler.WaitAll();
-    auto end = std::chrono::system_clock::now();
+    auto end = std::chrono::steady_clock::now();
     ASSERT_LT(2 * (end - start), kTasks * kCycles * kIdleTime);
     ASSERT_EQ(count, kTasks);
 }
