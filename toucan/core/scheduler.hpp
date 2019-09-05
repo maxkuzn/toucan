@@ -58,6 +58,10 @@ class Scheduler {
     void Suspend(SpinLock& sl);
     void WakeUp(Fiber* fiber);
 
+    size_t ThreadCount() {
+        return workers_.size();
+    }
+
   private:
     void Execute(Fiber* fiber);
     void Reschedule(Fiber* fiber);
