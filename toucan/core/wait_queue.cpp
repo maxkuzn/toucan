@@ -48,4 +48,11 @@ void WaitQueue::WakeAll() {
     }
 }
 
+bool WaitQueue::Empty() {
+    sl_.Lock();
+    bool res = !head_;
+    sl_.Unlock();
+    return res;
+}
+
 }  // namespace toucan
