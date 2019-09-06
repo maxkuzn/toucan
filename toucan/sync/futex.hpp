@@ -16,6 +16,8 @@ class Futex {
     void WakeAll();
 
     void SetValue(size_t value);
+    void IncrValue();
+    size_t GetValue();
 
   private:
     SpinLock sl_;

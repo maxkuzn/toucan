@@ -58,4 +58,17 @@ void Futex::SetValue(size_t value) {
     sl_.Unlock();
 }
 
+void Futex::IncrValue() {
+    sl_.Lock();
+    value_++;
+    sl_.Unlock();
+}
+
+size_t Futex::GetValue() {
+    sl_.Lock();
+    size_t value = value_;
+    sl_.Unlock();
+    return value;
+}
+
 }  // namespace toucan
