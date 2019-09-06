@@ -24,20 +24,9 @@ using namespace std::chrono_literals;
 #endif
 
 /////////////////////////////////////////////////////////////////////
-
-// Set up different IAlgorithms in gtest
-
-template <typename Algo>
-class MutexTest : public ::testing::Test {
-  protected:
-    std::shared_ptr<algo::IAlgorithm> algo = std::make_shared<Algo>();
-};
-
-TYPED_TEST_SUITE(MutexTest, AllAlgorithmsTypes);
-
-/////////////////////////////////////////////////////////////////////
-
 // Tests
+
+TEST_CASE_WITH_ALL_ALGOS(MutexTest);
 
 TYPED_TEST(MutexTest, SimpleCounting) {
     static const size_t kTasks = 100;

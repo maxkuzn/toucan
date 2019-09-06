@@ -24,20 +24,10 @@ using namespace std::chrono_literals;
 #endif
 
 /////////////////////////////////////////////////////////////////////
-
-// Set up different IAlgorithms in gtest
-
-template <typename Algo>
-class SchedulerTest : public ::testing::Test {
-  protected:
-    std::shared_ptr<algo::IAlgorithm> algo = std::make_shared<Algo>();
-};
-
-TYPED_TEST_SUITE(SchedulerTest, AllAlgorithmsTypes);
-
-/////////////////////////////////////////////////////////////////////
-
 // Tests
+
+TEST_CASE_WITH_ALL_ALGOS(SchedulerTest);
+
 
 TYPED_TEST(SchedulerTest, Destructor) {
     Scheduler scheduler(this->algo, 4);
