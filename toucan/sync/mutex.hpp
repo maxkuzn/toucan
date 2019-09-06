@@ -1,7 +1,7 @@
 #pragma once
 
 #include <toucan/core/fiber.hpp>
-#include <toucan/core/wait_queue.hpp>
+#include <toucan/sync/futex.hpp>
 
 namespace toucan {
 
@@ -18,7 +18,7 @@ class Mutex {
 
   private:
     twist::atomic<Fiber*> owner_{nullptr};
-    WaitQueue wait_queue_;
+    Futex futex_;
 };
 
 }  // namespace toucan

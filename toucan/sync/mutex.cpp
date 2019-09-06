@@ -6,10 +6,11 @@
 namespace toucan {
 
 Mutex::Mutex() {
+    futex_.SetValue(0);
 }
 
 Mutex::~Mutex() {
-    ASSERT(wait_queue_.Empty(), "There are still waiting fibers");
+    // ASSERT(futex_.Empty(), "There are still waiting fibers");
 }
 
 void Mutex::Lock() {
@@ -18,16 +19,18 @@ void Mutex::Lock() {
 
     Fiber* expected = nullptr;
     while (!owner_.compare_exchange_weak(expected, curr_fiber)) {
-        wait_queue_.Wait();
+        futex_.Wait(1);
         expected = nullptr;
     }
+    futex_.SetValue(1);
 }
 
 void Mutex::Unlock() {
     ASSERT(owner_ == GetCurrentFiber(), "Unlock can only owner");
-
+    
+    futex_.SetValue(0);
     owner_.store(nullptr);
-    wait_queue_.WakeOne();
+    futex_.WakeOne();
 }
 
 bool Mutex::TryLock() {
@@ -35,9 +38,12 @@ bool Mutex::TryLock() {
     ASSERT(owner_ != GetCurrentFiber(), "Already locked");
 
     Fiber* expected = nullptr;
-    return owner_.compare_exchange_weak(expected, curr_fiber);
+    if (owner_.compare_exchange_weak(expected, curr_fiber)) {
+        futex_.SetValue(1);
+        return true;
+    }
+    return false;
 }
-    
 
 }  // namespace toucan
 
