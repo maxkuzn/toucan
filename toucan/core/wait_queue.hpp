@@ -15,6 +15,8 @@ class WaitQueue {
     void WakeOne();
     void WakeAll();
 
+    bool Empty();
+
   private:
     SpinLock sl_;
     Node* head_ = nullptr;
