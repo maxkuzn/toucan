@@ -13,20 +13,19 @@ class FIFO : public IAlgorithm {
     FIFO() {
     }
 
-    virtual ~FIFO() {
+    ~FIFO() {
     }
 
-    virtual void SetWorkersNum(size_t /*workers_num*/) {
+    void SetWorkersNum(size_t /*workers_num*/) override {
     }
 
-    virtual void SetupWorker() {
+    void SetupWorker() override {
     }
 
-    virtual Fiber* PickNextFiber() final;
-    virtual void Add(Fiber* fiber) final;
-    virtual bool HasFibers() final;
+    Fiber* PickNextFiber() override;
+    void Add(Fiber* fiber) override;
 
-    virtual void Shutdown() final {
+    void Shutdown() override {
     }
 
   private:

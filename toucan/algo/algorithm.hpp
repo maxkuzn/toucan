@@ -25,8 +25,6 @@ class IAlgorithm {
     virtual Fiber* PickNextFiber() = 0;
     virtual void Add(Fiber* fiber) = 0;  // Another name?
 
-    virtual bool HasFibers() = 0;
-
     virtual void Shutdown() = 0;
 };
 
