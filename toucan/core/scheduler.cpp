@@ -11,7 +11,7 @@ static thread_local Worker* current_worker = nullptr;
 // next functions avaliable only in worker threads
 
 Worker* GetCurrentWorker() {
-    ASSERT(current_worker, "Should be in worker");
+    // ASSERT(current_worker, "Should be in worker");
     return current_worker;
 }
 
@@ -122,6 +122,7 @@ void Scheduler::Reschedule(Fiber* fiber) {
     }
 }
 
+// Return with unlocked lock
 void Scheduler::Suspend(SpinLock& sl) {
     GetCurrentFiber()->SetState(FiberState::Suspended);
     GetCurrentWorker()->lock = &sl;
@@ -139,6 +140,7 @@ void Scheduler::SpawnWorker() {
     workers_.emplace_back();
     Worker* worker = &workers_.back();
     worker->scheduler = this;
+    worker->id = workers_.size() - 1;
     worker->thread = std::thread([this, worker] { WorkerMain(worker); });
 }
 

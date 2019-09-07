@@ -24,6 +24,7 @@ struct Worker {
     ExecutionContext context;
     std::thread thread;
     SpinLock* lock = nullptr;
+    size_t id;
 
     void Unlock() {
         ASSERT(lock != nullptr, "Should unlock only locked spinlock");
