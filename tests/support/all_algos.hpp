@@ -5,11 +5,15 @@
 #include <toucan/algo/algorithm.hpp>
 
 #include <toucan/algo/fifo.hpp>
+#include <toucan/algo/work_stealing.hpp>
 
 namespace toucan {
 namespace testing {
 
-using AllAlgorithmsTypes = ::testing::Types<algo::FIFO>;
+using AllAlgorithmsTypes = ::testing::Types<
+    algo::FIFO,
+    algo::WorkStealing
+>;
 
 #define TEST_CASE_WITH_ALL_ALGOS(TestCaseName)          \
 template <typename Algo>                                \
