@@ -15,6 +15,9 @@
 using namespace toucan;
 using namespace toucan::testing;
 
+// for 1s, 5ms and so on
+using namespace std::chrono_literals;
+
 /////////////////////////////////////////////////////////////////////
 
 #if defined(__clang__)
@@ -88,6 +91,45 @@ TYPED_TEST(ConditionVariableTest, Works) {
     
     ASSERT_EQ(fuel, 0);
 }
+
+TYPED_TEST(ConditionVariableTest, NoBusyWait) {
+    Mutex mutex;
+    ConditionVariable cv;
+    bool flag = true;
+
+    auto holder = [&] {
+        UniqueLock lock(mutex);
+        while (flag) {
+            lock.Unlock();
+            Yield();
+            lock.Lock();
+        }
+        std::this_thread::sleep_for(1s);
+        flag = true;
+        cv.NotifyOne();
+    };
+
+    auto waiter = [&] {
+        UniqueLock lock(mutex);
+        flag = false;
+        auto start = std::chrono::steady_clock::now();
+        cv.Wait(lock, [&] { return flag; });
+        auto end = std::chrono::steady_clock::now();
+        ASSERT_GT(end - start, 900ms);
+    };
+
+    auto scheduler = Scheduler::Create<TypeParam>(4);
+
+    auto start_clock = std::clock();
+    scheduler.Spawn(holder);
+    scheduler.Spawn(waiter);
+    scheduler.WaitAll();
+
+    auto cpu_time_seconds = static_cast<double>(std::clock() - start_clock) / CLOCKS_PER_SEC;
+    ASSERT_LT(cpu_time_seconds, 0.1);
+}
+
+
 
 /////////////////////////////////////////////////////////////////////
 

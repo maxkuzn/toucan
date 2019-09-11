@@ -60,7 +60,7 @@ TYPED_TEST(ChannelTest, OnePair) {
 }
 
 TYPED_TEST(ChannelTest, OneSenderManyGetters) {
-    static const size_t kWorkers = 1000;
+    static const size_t kWorkers = 100;
     static const size_t kNumbers = 100000;
 
     Channel<int> chan;
@@ -106,7 +106,7 @@ TYPED_TEST(ChannelTest, OneSenderManyGetters) {
 }
 
 // Doesn't work now because of workers busy wait for fibers
-TYPED_TEST(ChannelTest, DISABLED_NoBusyWait) {
+TYPED_TEST(ChannelTest, NoBusyWait) {
     FiberBarrier barrier(2);
     Channel<int> chan;
 

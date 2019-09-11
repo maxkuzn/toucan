@@ -54,8 +54,7 @@ TYPED_TEST(MutexTest, SimpleCounting) {
     ASSERT_EQ(count, kTasks * kIncrements);
 }
 
-// Doesn't work now because of workers busy wait for fibers
-TYPED_TEST(MutexTest, DISABLED_NoBusyWait) {
+TYPED_TEST(MutexTest, NoBusyWait) {
     Mutex mutex;
 
     auto scheduler = Scheduler::Create<TypeParam>(4);

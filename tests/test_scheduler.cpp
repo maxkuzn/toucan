@@ -77,8 +77,7 @@ TYPED_TEST(SchedulerTest, MoreFibers) {
     ASSERT_EQ(count, kTasks);
 }
 
-// Doesn't work now because of workers busy wait for fibers
-TYPED_TEST(SchedulerTest, DISABLED_NoBusyWorkers) {
+TYPED_TEST(SchedulerTest, NoBusyWorkers) {
     auto scheduler = Scheduler::Create<TypeParam>();
     auto start = std::clock();
     std::this_thread::sleep_for(500ms);
