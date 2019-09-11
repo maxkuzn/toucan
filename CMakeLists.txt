@@ -16,9 +16,14 @@ add_subdirectory(libs)
 add_subdirectory(toucan)
 
 option(TOUCAN_TESTS "Enable toucan library tests" OFF)
+option(TOUCAN_BENCHMARKS "Enable toucan library benchmarks" OFF)
 
 if(${TOUCAN_TESTS})
     enable_testing()
     add_subdirectory(tests)
+endif()
+
+if(${TOUCAN_BENCHMARKS})
+    add_subdirectory(benchmarks)
 endif()
 
