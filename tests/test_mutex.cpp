@@ -56,7 +56,6 @@ TYPED_TEST(MutexTest, SimpleCounting) {
 
 // Doesn't work now because of workers busy wait for fibers
 TYPED_TEST(MutexTest, DISABLED_NoBusyWait) {
-    FiberBarrier barrier(2);
     Mutex mutex;
 
     auto scheduler = Scheduler::Create<TypeParam>(4);
