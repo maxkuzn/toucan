@@ -31,20 +31,29 @@ void WorkStealing::SetupWorker() {
 }
 
 Fiber* WorkStealing::PickNextFiber () {
-    // Search in local queue
     size_t id = GetCurrentWorker()->id;
     Data* local_data = workers_data_[id];
-    // Every 61 tick skip local storage
-    if (local_data->count_fiber++ % 61 != 0) {
-        std::unique_lock<twist::mutex> local_lock(local_data->mutex);
-        auto& local_queue = local_data->queue;
-        if (!local_queue.empty()) {
-            auto fiber = local_queue.front();
-            local_queue.pop();
+
+    // Every 61 tick first search in global queue
+    if (local_data->count_fiber++ % 61 == 0) {
+        std::unique_lock<twist::mutex> global_lock(global_mutex_);
+        if (!global_queue_.empty()) {
+            auto fiber = global_queue_.front();
+            global_queue_.pop();
             return fiber;
         }
-        local_lock.unlock();
+        global_lock.unlock();
     }
+
+    // Search in local queue
+    std::unique_lock<twist::mutex> local_lock(local_data->mutex);
+    auto& local_queue = local_data->queue;
+    if (!local_queue.empty()) {
+        auto fiber = local_queue.front();
+        local_queue.pop();
+        return fiber;
+    }
+    local_lock.unlock();
 
     // Go to global queue
     std::unique_lock<twist::mutex> global_lock(global_mutex_);
