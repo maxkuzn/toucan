@@ -60,12 +60,12 @@ class Scheduler {
     void Yield();
     void Terminate();
 
+    void Suspend(SpinLock& sl);
+    void WakeUp(Fiber* fiber);
+
     // User should call WaitAll before shutdown
     // otherwise some of tasks may be uncompleted
     void Shutdown();
-
-    void Suspend(SpinLock& sl);
-    void WakeUp(Fiber* fiber);
 
     size_t ThreadCount() {
         return workers_.size();
@@ -76,9 +76,8 @@ class Scheduler {
     void Reschedule(Fiber* fiber);
     void Destroy(Fiber* fiber);
 
-    const std::vector<Worker>& GetWorkers() const {
-        return workers_;
-    }
+    void SuspendWorker();
+    void NotifyWorkers();
 
     void SwitchTo(Fiber* fiber);
     void SwitchToScheduler();
@@ -97,7 +96,10 @@ class Scheduler {
     twist::mutex wait_mutex_;
     twist::condition_variable wait_cv_;
 
-    twist::atomic<bool> started_{false};
+    bool has_new_fibers_ = false;
+    twist::mutex workers_mutex_;
+    twist::condition_variable workers_cv_;
+
     twist::atomic<bool> shutdown_{false};
 
     std::shared_ptr<algo::IAlgorithm> algo_;

@@ -53,6 +53,7 @@ void Scheduler::Spawn(FiberRoutine routine) {
     Fiber* fiber = Fiber::CreateFiber(routine);
     fiber->SetState(FiberState::Runnable);
     algo_->Add(fiber);
+    NotifyWorkers();
 }
 
 void Scheduler::WaitAll() {
@@ -74,30 +75,26 @@ void Scheduler::Terminate() {
     SwitchToScheduler();
 }
 
-void Scheduler::Destroy(Fiber* fiber) {
-    delete fiber;
-    if (--tasks_ == 0) {
-        std::unique_lock<twist::mutex> lock(wait_mutex_);
-        wait_cv_.notify_all();
-    }
+// Return with unlocked lock
+void Scheduler::Suspend(SpinLock& sl) {
+    GetCurrentFiber()->SetState(FiberState::Suspended);
+    GetCurrentWorker()->lock = &sl;
+    SwitchToScheduler();
+}
+
+void Scheduler::WakeUp(Fiber* fiber) {
+    fiber->SetState(FiberState::Runnable);
+    algo_->Add(fiber);
+    NotifyWorkers();
 }
 
 void Scheduler::Shutdown() {
     shutdown_.store(true);
+    NotifyWorkers();
     algo_->Shutdown();
     for (auto& worker : workers_) {
         worker.thread.join();
     }
-}
-
-void Scheduler::SwitchTo(Fiber* fiber) {
-    auto& current_context = GetCurrentWorker()->context;
-    current_context.SwitchTo(fiber->Context());
-}
-
-void Scheduler::SwitchToScheduler() {
-    Fiber* fiber = GetCurrentFiber();
-    fiber->Context().SwitchTo(GetCurrentWorker()->context);
 }
 
 void Scheduler::Execute(Fiber* fiber) {
@@ -113,6 +110,7 @@ void Scheduler::Reschedule(Fiber* fiber) {
         Destroy(fiber);
     } else if (state == FiberState::Runnable) {
         algo_->Add(fiber);
+        NotifyWorkers();
     } else if (state == FiberState::Suspended) {
         GetCurrentWorker()->Unlock();
     } else if (state == FiberState::Running) {
@@ -122,16 +120,37 @@ void Scheduler::Reschedule(Fiber* fiber) {
     }
 }
 
-// Return with unlocked lock
-void Scheduler::Suspend(SpinLock& sl) {
-    GetCurrentFiber()->SetState(FiberState::Suspended);
-    GetCurrentWorker()->lock = &sl;
-    SwitchToScheduler();
+void Scheduler::Destroy(Fiber* fiber) {
+    delete fiber;
+    if (--tasks_ == 0) {
+        std::unique_lock<twist::mutex> lock(wait_mutex_);
+        wait_cv_.notify_all();
+    }
 }
 
-void Scheduler::WakeUp(Fiber* fiber) {
-    fiber->SetState(FiberState::Runnable);
-    algo_->Add(fiber);
+void Scheduler::SuspendWorker() {
+    std::unique_lock<twist::mutex> lock(workers_mutex_);
+    workers_cv_.wait(lock, [this] { return has_new_fibers_ || shutdown_; });
+    has_new_fibers_ = false;
+}
+
+void Scheduler::NotifyWorkers() {
+    std::unique_lock<twist::mutex> lock(workers_mutex_);
+    has_new_fibers_ = true;
+    lock.unlock();
+    workers_cv_.notify_all();
+}
+
+////////////////////////////////////////////////////////////////////
+
+void Scheduler::SwitchTo(Fiber* fiber) {
+    auto& current_context = GetCurrentWorker()->context;
+    current_context.SwitchTo(fiber->Context());
+}
+
+void Scheduler::SwitchToScheduler() {
+    Fiber* fiber = GetCurrentFiber();
+    fiber->Context().SwitchTo(GetCurrentWorker()->context);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -160,6 +179,7 @@ void Scheduler::WorkerLoop() {
     while (!shutdown_.load()) {
         Fiber* fiber = algo_->PickNextFiber();
         if (!fiber) {
+            SuspendWorker();
             continue;
         }
         Execute(fiber);
