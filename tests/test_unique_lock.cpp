@@ -45,7 +45,7 @@ TYPED_TEST(UniqueLockTest, SimpleCounting) {
         }
     };
 
-    Scheduler scheduler(this->algo, 4);
+    auto scheduler = Scheduler::Create<TypeParam>(4);
     for (size_t i = 0; i != kTasks; ++i) {
         scheduler.Spawn(task);
     }

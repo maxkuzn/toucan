@@ -17,9 +17,7 @@ using AllAlgorithmsTypes = ::testing::Types<
 
 #define TEST_CASE_WITH_ALL_ALGOS(TestCaseName)          \
 template <typename Algo>                                \
-class TestCaseName : public ::testing::Test {          \
-  protected:                                            \
-    std::shared_ptr<algo::IAlgorithm> algo = std::make_shared<Algo>(); \
+class TestCaseName : public ::testing::Test {           \
 };                                                      \
                                                         \
 TYPED_TEST_SUITE(TestCaseName, AllAlgorithmsTypes)

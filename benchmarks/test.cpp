@@ -19,7 +19,7 @@ static void BM_Func(benchmark::State& state) {
         }
     };
 
-    Scheduler scheduler(std::make_shared<Algo>(), 4);
+    auto scheduler = Scheduler::Create<Algo>(4);
     for (auto _ : state) {
         for (size_t i = 0; i != kTasks; ++i) {
             scheduler.Spawn(task);

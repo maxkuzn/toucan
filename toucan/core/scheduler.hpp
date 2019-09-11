@@ -9,6 +9,7 @@
 #include <toucan/support/assert.hpp>
 
 #include <thread>
+#include <type_traits>
 
 #include <twist/stdlike/atomic.hpp>
 #include <twist/stdlike/mutex.hpp>
@@ -34,8 +35,15 @@ struct Worker {
 };
 
 class Scheduler {
+  private:
+    Scheduler(std::shared_ptr<algo::IAlgorithm> algo, size_t workers_count);
+
   public:
-    Scheduler(std::shared_ptr<algo::IAlgorithm> algo, size_t workers_count = std::thread::hardware_concurrency());
+    template <typename Algo>
+    static inline Scheduler Create(size_t workers_count = std::thread::hardware_concurrency()) {
+        static_assert(std::is_base_of_v<algo::IAlgorithm, Algo>, "toucan::Scheduler::Create<Algo>: template Algo must be derived from toucan::algo::IAlgorithm");
+        return Scheduler(std::make_shared<Algo>(), workers_count);
+    }
 
     // User should call WaitAll before destructore
     // otherwise some of tasks may be uncompleted

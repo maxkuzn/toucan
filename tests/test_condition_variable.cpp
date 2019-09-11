@@ -79,7 +79,7 @@ TYPED_TEST(ConditionVariableTest, Works) {
         }
     };
 
-    Scheduler scheduler(this->algo, 4);
+    auto scheduler = Scheduler::Create<TypeParam>(4);
     for (size_t i = 0; i != kPawns; ++i) {
         scheduler.Spawn(pawn);
     }

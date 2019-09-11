@@ -45,7 +45,7 @@ TYPED_TEST(MutexTest, SimpleCounting) {
         }
     };
 
-    Scheduler scheduler(this->algo, 4);
+    auto scheduler = Scheduler::Create<TypeParam>(4);
     for (size_t i = 0; i != kTasks; ++i) {
         scheduler.Spawn(task);
     }
@@ -59,7 +59,7 @@ TYPED_TEST(MutexTest, DISABLED_NoBusyWait) {
     FiberBarrier barrier(2);
     Mutex mutex;
 
-    Scheduler scheduler(this->algo, 4);
+    auto scheduler = Scheduler::Create<TypeParam>(4);
     scheduler.Spawn([&] {
         mutex.Lock();
         std::this_thread::sleep_for(1s);
@@ -116,7 +116,7 @@ TYPED_TEST(MutexTest, DontBlockThread) {
         }
     };
 
-    Scheduler scheduler(this->algo, 1);
+    auto scheduler = Scheduler::Create<TypeParam>(1);
     scheduler.Spawn(holder);
 
     std::this_thread::sleep_for(200ms);

@@ -30,13 +30,13 @@ TEST_CASE_WITH_ALL_ALGOS(SchedulerTest);
 
 
 TYPED_TEST(SchedulerTest, Destructor) {
-    Scheduler scheduler(this->algo, 4);
+    auto scheduler = Scheduler::Create<TypeParam>(4);
     scheduler.Spawn([] {});
     scheduler.WaitAll();
 }
 
 TYPED_TEST(SchedulerTest, HardwareConcurrency) {
-    Scheduler scheduler(this->algo);
+    auto scheduler = Scheduler::Create<TypeParam>();
 
     const size_t hw_concurrency = std::thread::hardware_concurrency();
     if (hw_concurrency != 0) {
@@ -48,7 +48,7 @@ TYPED_TEST(SchedulerTest, HardwareConcurrency) {
 
 
 TYPED_TEST(SchedulerTest, RunOneFiber) {
-    Scheduler scheduler(this->algo, 4);
+    auto scheduler = Scheduler::Create<TypeParam>(4);
     std::atomic<bool> flag = false;
     scheduler.Spawn([&] {
         std::this_thread::sleep_for(5ms);
@@ -67,7 +67,7 @@ TYPED_TEST(SchedulerTest, MoreFibers) {
         count++;
     };
 
-    Scheduler scheduler(this->algo, 4);
+    auto scheduler = Scheduler::Create<TypeParam>(4);
     for (size_t i = 0; i != kTasks; ++i) {
         scheduler.Spawn(task);
     }
@@ -79,7 +79,7 @@ TYPED_TEST(SchedulerTest, MoreFibers) {
 
 // Doesn't work now because of workers busy wait for fibers
 TYPED_TEST(SchedulerTest, DISABLED_NoBusyWorkers) {
-    Scheduler scheduler(this->algo);
+    auto scheduler = Scheduler::Create<TypeParam>();
     auto start = std::clock();
     std::this_thread::sleep_for(500ms);
     auto cpu_elapsed_seconds = static_cast<double>(std::clock() - start) / CLOCKS_PER_SEC;
@@ -102,7 +102,7 @@ TYPED_TEST(SchedulerTest, Barriers) {
         }
     };
 
-    Scheduler scheduler(this->algo, 4);
+    auto scheduler = Scheduler::Create<TypeParam>(4);
     for (size_t i = 0; i != kTasks; ++i) {
         scheduler.Spawn(task);
     }
@@ -133,7 +133,7 @@ TYPED_TEST(SchedulerTest, YieldAndFairness) {
         }
     };
 
-    Scheduler scheduler(this->algo, 1);
+    auto scheduler = Scheduler::Create<TypeParam>(1);
     scheduler.Spawn(first);
     scheduler.Spawn(second);
     scheduler.WaitAll();
@@ -143,7 +143,7 @@ TYPED_TEST(SchedulerTest, YieldAndFairness) {
 }
 
 TYPED_TEST(SchedulerTest, ThreadCount) {
-    static const size_t kThreads = 13;
+    static const size_t kThreads = 7;
     static const size_t kTasks = 100;
     static const size_t kIters = 100;
 
@@ -164,7 +164,7 @@ TYPED_TEST(SchedulerTest, ThreadCount) {
         }
     };
 
-    Scheduler scheduler(this->algo, kThreads);
+    auto scheduler = Scheduler::Create<TypeParam>(kThreads);
     scheduler.Spawn(spawner);
     scheduler.WaitAll();
 
@@ -188,7 +188,7 @@ TYPED_TEST(SchedulerTest, Races) {
         }
     };
 
-    Scheduler scheduler(this->algo, 4);
+    auto scheduler = Scheduler::Create<TypeParam>(4);
     for (size_t i = 0; i != kFibers; ++i) {
         scheduler.Spawn(incrementer);
     }
@@ -214,7 +214,7 @@ TYPED_TEST(SchedulerTest, NoRacesInSingleThread) {
         }
     };
 
-    Scheduler scheduler(this->algo, 1);
+    auto scheduler = Scheduler::Create<TypeParam>(1);
     for (size_t i = 0; i != kFibers; ++i) {
         scheduler.Spawn(incrementer);
     }
@@ -245,7 +245,7 @@ TYPED_TEST(SchedulerTest, SpawnNotOnlyInCurrentThread) {
         }
     };
 
-    Scheduler scheduler(this->algo, 4);
+    auto scheduler = Scheduler::Create<TypeParam>(4);
 
     scheduler.Spawn(spawner);
     scheduler.WaitAll();
