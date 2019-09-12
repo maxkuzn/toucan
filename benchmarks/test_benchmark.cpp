@@ -1,7 +1,7 @@
 #include <benchmark/benchmark.h>
 
 #include <toucan/core/scheduler.hpp>
-#include <toucan/algo/fifo.hpp>
+#include <toucan/algo/global_fifo.hpp>
 #include <toucan/algo/work_stealing.hpp>
 
 using namespace toucan;

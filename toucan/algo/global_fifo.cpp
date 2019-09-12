@@ -1,4 +1,4 @@
-#include <toucan/algo/fifo.hpp>
+#include <toucan/algo/global_fifo.hpp>
 
 namespace toucan {
 namespace algo {

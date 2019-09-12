@@ -4,7 +4,7 @@
 
 #include <toucan/algo/algorithm.hpp>
 
-#include <toucan/algo/fifo.hpp>
+#include <toucan/algo/global_fifo.hpp>
 #include <toucan/algo/work_stealing.hpp>
 
 namespace toucan {
