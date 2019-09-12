@@ -8,12 +8,12 @@
 namespace toucan {
 namespace algo {
 
-class FIFO : public IAlgorithm {
+class GlobalFIFO : public IAlgorithm {
   public:
-    FIFO() {
+    GlobalFIFO() {
     }
 
-    ~FIFO() {
+    ~GlobalFIFO() {
     }
 
     void SetWorkersNum(size_t /*workers_num*/) override {

@@ -27,7 +27,7 @@ static void BM_Func(benchmark::State& state) {
         scheduler.WaitAll();
     }
 }
-BENCHMARK_TEMPLATE(BM_Func, algo::FIFO);
+BENCHMARK_TEMPLATE(BM_Func, algo::GlobalFIFO);
 BENCHMARK_TEMPLATE(BM_Func, algo::WorkStealing);
 
 // Run the benchmark

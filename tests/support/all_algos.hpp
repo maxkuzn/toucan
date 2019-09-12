@@ -11,7 +11,7 @@ namespace toucan {
 namespace testing {
 
 using AllAlgorithmsTypes = ::testing::Types<
-    algo::FIFO,
+    algo::GlobalFIFO,
     algo::WorkStealing
 >;
 
