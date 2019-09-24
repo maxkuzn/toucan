@@ -14,8 +14,11 @@ namespace testing {
 
 using AllAlgorithmsTypes = ::testing::Types<
     algo::GlobalFIFO,
-    algo::WorkStealing<algo::MutexQueue, algo::MutexQueue>,
-    algo::WorkStealing<algo::MutexQueue, algo::LFABQueue>
+    algo::WorkStealing<algo::MutexQueue>,
+    algo::WorkStealing<algo::LFABQueue<true, true>>,
+    algo::WorkStealing<algo::LFABQueue<false, true>>,
+    algo::WorkStealing<algo::LFABQueue<true, false>>,
+    algo::WorkStealing<algo::LFABQueue<false, false>>
 >;
 
 #define TEST_CASE_WITH_ALL_ALGOS(TestCaseName)          \

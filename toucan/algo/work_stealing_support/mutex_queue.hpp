@@ -1,6 +1,8 @@
 #pragma once
 
 #include <toucan/core/fiber.hpp>
+#include <queue>
+#include <twist/stdlike/mutex.hpp>
 
 namespace toucan {
 namespace algo {
@@ -13,10 +15,9 @@ class MutexQueue {
     ~MutexQueue() {
     }
 
-    bool Put(Fiber* fiber) {
+    void Put(Fiber* fiber, GlobalQueue&) {
         std::unique_lock<twist::mutex> lock(mutex_);
         data_.push(fiber);
-        return true;
     }
 
     Fiber* Get() {
@@ -29,8 +30,13 @@ class MutexQueue {
         return fiber;
     }
 
-    Fiber* Steal() {
-        return Get();
+    Fiber* GetFromGlobal(GlobalQueue& global_queue) {
+        return global_queue.Get();
+    }
+
+
+    Fiber* Steal(MutexQueue& other) {
+        return other.Get();
     }
 
   private:
