@@ -50,12 +50,12 @@ static void BM_SlowThread(benchmark::State& state) {
 
 static void SlowThreadArgs(benchmark::internal::Benchmark* b) {
     // threads, tasks, iters, slowness
-    b->Args({4, 10, 100, 10});
-    b->Args({4, 100, 10, 10});
-    b->Args({4, 100, 100, 10});
-    b->Args({4, 10, 1000, 10});
-    b->Args({4, 1000, 10, 10});
-    b->Args({4, 100, 100, 100});
+    // b->Args({4, 10, 100, 10});
+    // b->Args({4, 100, 10, 10});
+    // b->Args({4, 100, 100, 10});
+    // b->Args({4, 10, 1000, 10});
+    b->Args({4, 1000, 10, 100});
+    // b->Args({4, 100, 100, 100});
 }
 
 BENCHMARK_WITH_ALL_ALGOS(SlowThread);

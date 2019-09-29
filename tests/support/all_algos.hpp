@@ -14,7 +14,10 @@ namespace testing {
 
 using AllAlgorithmsTypes = ::testing::Types<
     algo::GlobalFIFO,
-    algo::WorkStealing<algo::MutexQueue>,
+    algo::WorkStealing<algo::MutexQueue<true, true>>,
+    algo::WorkStealing<algo::MutexQueue<true, false>>,
+    algo::WorkStealing<algo::MutexQueue<false, true>>,
+    algo::WorkStealing<algo::MutexQueue<false, false>>,
     algo::WorkStealing<algo::LFABQueue<true, true>>,
     algo::WorkStealing<algo::LFABQueue<false, true>>,
     algo::WorkStealing<algo::LFABQueue<true, false>>,

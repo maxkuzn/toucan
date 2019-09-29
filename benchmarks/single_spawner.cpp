@@ -40,8 +40,8 @@ static void BM_SingleSpawner(benchmark::State& state) {
 }
 
 static void SingleSpawnerArgs(benchmark::internal::Benchmark* b) {
-    b->Args({4, 100, 100, 0});
-    b->Args({4, 100, 100, 1});
+    b->Args({4, 1000, 10, 0});
+    //b->Args({4, 1000, 10, 1});
 }
 
 BENCHMARK_WITH_ALL_ALGOS(SingleSpawner);

@@ -12,8 +12,20 @@ BENCHMARK_TEMPLATE(BM_ ## BenchmarkName, AlgoName)          \
 
 
 typedef toucan::algo::WorkStealing<
-    toucan::algo::MutexQueue
-> WorkStealing_MutexQueue_MutexQueue;
+    toucan::algo::MutexQueue<false, false>
+> WorkStealing_MutexQueue_MutexQueue_ff;
+
+typedef toucan::algo::WorkStealing<
+    toucan::algo::MutexQueue<true, false>
+> WorkStealing_MutexQueue_MutexQueue_tf;
+
+typedef toucan::algo::WorkStealing<
+    toucan::algo::MutexQueue<false, true>
+> WorkStealing_MutexQueue_MutexQueue_ft;
+
+typedef toucan::algo::WorkStealing<
+    toucan::algo::MutexQueue<true, true>
+> WorkStealing_MutexQueue_MutexQueue_tt;
 
 typedef toucan::algo::WorkStealing<
     toucan::algo::LFABQueue<false, false>
@@ -33,7 +45,10 @@ typedef toucan::algo::WorkStealing<
 
 #define BENCHMARK_WITH_ALL_ALGOS(BenchmarkName)             \
 BENCHMARK_WITH_ALGO(BenchmarkName, algo::GlobalFIFO);       \
-BENCHMARK_WITH_ALGO(BenchmarkName, WorkStealing_MutexQueue_MutexQueue); \
+BENCHMARK_WITH_ALGO(BenchmarkName, WorkStealing_MutexQueue_MutexQueue_ff); \
+BENCHMARK_WITH_ALGO(BenchmarkName, WorkStealing_MutexQueue_MutexQueue_tf); \
+BENCHMARK_WITH_ALGO(BenchmarkName, WorkStealing_MutexQueue_MutexQueue_ft); \
+BENCHMARK_WITH_ALGO(BenchmarkName, WorkStealing_MutexQueue_MutexQueue_tt); \
 BENCHMARK_WITH_ALGO(BenchmarkName, WorkStealing_MutexQueue_LFABQueue_ff); \
 BENCHMARK_WITH_ALGO(BenchmarkName, WorkStealing_MutexQueue_LFABQueue_tf); \
 BENCHMARK_WITH_ALGO(BenchmarkName, WorkStealing_MutexQueue_LFABQueue_ft); \

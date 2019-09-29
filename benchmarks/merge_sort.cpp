@@ -91,12 +91,12 @@ static void BM_MergeSort(benchmark::State& state) {
 }
 
 static void MergeSortArgs(benchmark::internal::Benchmark* b) {
-    b->Args({1, 1024});
-    b->Args({2, 1024});
+    // b->Args({1, 1024});
+    // b->Args({2, 1024});
     b->Args({4, 1024});
-    b->Args({1, 1024 * 128});
-    b->Args({2, 1024 * 128});
-    b->Args({4, 1024 * 128});
+    // b->Args({1, 1024 * 128});
+    // b->Args({2, 1024 * 128});
+    // b->Args({4, 1024 * 128});
 }
 
 BENCHMARK_WITH_ALL_ALGOS(MergeSort);

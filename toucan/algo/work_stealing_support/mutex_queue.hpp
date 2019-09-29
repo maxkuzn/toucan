@@ -7,6 +7,8 @@
 namespace toucan {
 namespace algo {
 
+
+template <bool kStealOnlyOne, bool kGetOneFromGlob>
 class MutexQueue {
   public:
     MutexQueue() {
@@ -31,12 +33,44 @@ class MutexQueue {
     }
 
     Fiber* GetFromGlobal(GlobalQueue& global_queue) {
-        return global_queue.Get();
+        if (kGetOneFromGlob) {
+            return global_queue.Get();
+        }
+        global_queue.Lock();
+        if (global_queue.SizeWithoutLock() == 0) {
+            global_queue.Unlock();
+            return nullptr;
+        }
+        std::unique_lock<twist::mutex> lock(mutex_);
+        while (global_queue.SizeWithoutLock() > 0) {
+            data_.push(global_queue.GetWithoutLock());
+        }
+        Fiber* fiber = data_.front();
+        data_.pop();
+        lock.unlock();
+        global_queue.Unlock();
+        return fiber;
     }
 
 
     Fiber* Steal(MutexQueue& other) {
-        return other.Get();
+        if (kStealOnlyOne) {
+            return other.Get();
+        }
+        auto& mutex1 = this < &other ? mutex_ : other.mutex_;
+        auto& mutex2 = this < &other ? other.mutex_ : mutex_;
+        std::unique_lock<twist::mutex> lock1(mutex1);
+        std::unique_lock<twist::mutex> lock2(mutex2);
+        while (other.data_.size() > data_.size()) {
+            data_.push(other.data_.front());
+            other.data_.pop();
+        }
+        if (data_.empty()) {
+            return nullptr;
+        }
+        auto fiber = data_.front();
+        data_.pop();
+        return fiber;
     }
 
   private:
